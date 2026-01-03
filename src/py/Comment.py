@@ -4,4 +4,4 @@ class Comment:
         self.post_id = post_id
         self.author = author
         self.date = date
-        self.contetn = content
+        self.content = content
