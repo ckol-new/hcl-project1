@@ -1,5 +1,8 @@
 from Author import Author
 
+# comment object holds all data around an individual comment, as well as tracking data back to the post it belongs to
+# comment objects contains the author object of the comment
+# comment object is fully serializable to and from json
 class Comment:
     def __init__(self, url: str, post_id: int, date: str,  author: Author, content: list[str]):
         self.url = url

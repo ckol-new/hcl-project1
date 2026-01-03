@@ -1,3 +1,5 @@
+# author object holds all data around an author of a post
+# author object is fully serializable to and from json
 class Author:
     def __init__(self, user_name: str, user_id: int, profile_link: str):
         self.user_name = user_name

@@ -1,6 +1,9 @@
 from Author import Author
 from Comment import Comment
 
+# post object holds all data around a given forum post
+# post object contains author object and list of comment objects
+# post objects is serializable to and from json
 class Post:
     def __init__(self, url: str, post_id: int, title: str, content: list[str], author: Author, date: str, comments: list[Comment]):
         self.url = url
