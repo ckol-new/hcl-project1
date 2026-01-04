@@ -1,4 +1,4 @@
-from Author import Author
+from py.model.Author import Author
 
 # comment object holds all data around an individual comment, as well as tracking data back to the post it belongs to
 # comment objects contains the author object of the comment

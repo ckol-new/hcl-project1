@@ -1,5 +1,5 @@
-from Author import Author
-from Comment import Comment
+from py.model.Author import Author
+from py.model.Comment import Comment
 
 # post object holds all data around a given forum post
 # post object contains author object and list of comment objects
