@@ -4,7 +4,7 @@ from py.model.Author import Author
 # comment objects contains the author object of the comment
 # comment object is fully serializable to and from json
 class Comment:
-    def __init__(self, url: str, post_id: int, date: str,  author: Author, content: list[str]):
+    def __init__(self, url: str, post_id: str, date: str,  author: Author, content: list[str]):
         self.url = url
         self.post_id = post_id
         self.author = author
@@ -21,7 +21,7 @@ class Comment:
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict):
          return cls(
              url=data['url'],
              post_id=data['post_id'],

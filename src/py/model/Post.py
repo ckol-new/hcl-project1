@@ -5,7 +5,7 @@ from py.model.Comment import Comment
 # post object contains author object and list of comment objects
 # post objects is serializable to and from json
 class Post:
-    def __init__(self, url: str, post_id: int, title: str, content: list[str], author: Author, date: str, comments: list[Comment]):
+    def __init__(self, url: str, post_id: str, title: str, content: list[str], author: Author, date: str, comments: list[Comment]):
         self.url = url
         self.post_id = post_id
         self.title = title
@@ -23,7 +23,7 @@ class Post:
             'author': self.author.to_dict(),
             'date': self.date,
             'comments': [
-                Comment.from_dict(comment) for comment in self.comments if self.comments
+                comment.to_dict() for comment in self.comments if self.comments
             ]
         }
 

@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
+import re
 import json
 import requests
+import unicodedata
+import unidecode
 import bs4
 from bs4 import BeautifulSoup
 from py.model.Author import Author
@@ -27,43 +30,51 @@ class ScrapingPipeline(ABC):
         pass
 
     @abstractmethod
-    def scrape_title(self, soup):
+    def scrape_title(self, soup: BeautifulSoup) -> str or None:
         pass
 
     @abstractmethod
-    def scrape_post_id(self, soup) -> int:
+    def scrape_post_id(self, url: str) -> str or None:
         pass
 
     @abstractmethod
-    def scrape_post_content(self, soup: BeautifulSoup) -> list[str]:
+    def scrape_post_content(self, soup: BeautifulSoup) -> list[str] or str or None:
         pass
 
     @abstractmethod
-    def scrape_post_author(self, soup: BeautifulSoup) -> Author:
+    def scrape_post_author(self, soup: BeautifulSoup) -> Author or None:
         pass
 
     @abstractmethod
-    def scrape_post_date(self, soup: BeautifulSoup) -> str:
+    def scrape_post_date(self, soup: BeautifulSoup) -> str or None:
         pass
 
     @abstractmethod
-    def scrape_comment_content(self, soup: BeautifulSoup) -> list[str]:
+    def scrape_comment_content(self, comment_div) -> list[str] or str or None:
         pass
 
     @abstractmethod
-    def scrape_comment_author(self, soup: BeautifulSoup) -> Author:
+    def scrape_comment_author(self, comment_div) -> Author or None:
         pass
 
     @abstractmethod
-    def scrape_comment_date(self, soup: BeautifulSoup) -> str:
+    def scrape_comment_date(self, comment_div) -> str or None:
         pass
 
     @abstractmethod
-    def scrape_comments(self, soup) -> list[Comment]:
+    def scrape_comments(self, soup, url) -> list[Comment] or None:
         pass
 
 
     # COMMON METHODS
+    # prepare for vectorization
+    def clean_text(self, text: str) -> str or None:
+        text = unidecode.unidecode(text)
+        # strip of useless control characters
+        text = ''.join(ch for ch in text if ch.isprintable())
+        return text
+
+
     def request_page(self, url: str) -> str:
         header = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -94,16 +105,22 @@ class ScrapingPipeline(ABC):
 
     # scrape a page for data
     def scrape_page(self, url: str) -> Post or None:
+        print(url)
         html = self.request_page(url)
         soup = BeautifulSoup(html, 'html.parser')
         title = self.scrape_title(soup)
-        post_id = self.scrape_post_id(soup)
+        print(title)
+        post_id = self.scrape_post_id(url)
+        print(post_id)
         date = self.scrape_post_date(soup)
+        print(date)
         content = self.scrape_post_content(soup)
+        print(content)
         author = self.scrape_post_author(soup)
+        print(author)
 
         # scrape comments
-        comments = self.scrape_comments(soup)
+        comments = self.scrape_comments(soup=soup, url=url)
 
         # only return if all elements are not none
         if not title: return None
@@ -111,6 +128,7 @@ class ScrapingPipeline(ABC):
         if not date: return None
         if not content or len(content) == 0: return None
         if not comments or len(comments) == 0: return None
+        print(title)
 
         post = Post(
             url=url,
@@ -121,10 +139,11 @@ class ScrapingPipeline(ABC):
             date=date,
             comments=comments
         )
+        print(post)
 
         return post
 
-    def scrape(self, crawl_path: str):
+    def scrape(self, crawl_path: str) -> list[Post]:
         length = 0
         scrape_results = []
         with open(crawl_path, 'r') as f:
@@ -132,12 +151,15 @@ class ScrapingPipeline(ABC):
         with open(crawl_path, 'r') as f:
             n = 0
             for link in f:
+                print(n)
                 if n % 10 == 0:
                     print(f'%{(n / length) * 100}')
+                n += 1
 
                 # get post object
                 post = self.scrape_page(link)
-                scrape_results.append(post)
+                if post:
+                    scrape_results.append(post)
 
         return scrape_results
 
@@ -146,7 +168,7 @@ class ScrapingPipeline(ABC):
             for post in scrape_results:
                 # none check
                 if post:
-                    f.write(json.dumps(post.to_dict()))
+                    f.write(json.dumps(post.to_dict(), indent=2))
                     f.write('\n')
 
 
@@ -163,12 +185,18 @@ class ALZConnectedScrapingPipeline(ScrapingPipeline, ABC):
         # crawl
         crawl_results = self.generate_crawl_result(seed_path, crawl_limit)
         self.save_crawl_results(crawl_path,  crawl_results)
-        pass
+
+        # scrape
+        scrape_results= self.scrape(crawl_path)
+        self.save_scrape_results(scrape_path, scrape_results)
+
 
     def generate_seeds(self, url_base: str, num_pages: int, start: int = 2, limit: int = None) -> list[str]:
         num = 0
         seeds = [url_base]
         for page in range(start, num_pages + 1):
+            if limit:
+                if num >= limit: break
             seed = url_base + '/p' + str(page)
             seeds.append(seed)
 
@@ -212,29 +240,128 @@ class ALZConnectedScrapingPipeline(ScrapingPipeline, ABC):
         return list(crawl_result)
 
 
-    def scrape_title(self, soup):
-        pass
+    def scrape_title(self, soup) -> str or None:
+        title_text = soup.title.string
+        title_text = title_text.removesuffix(' \u2014 ALZConnected')
+        return title_text
 
-    def scrape_post_id(self, soup) -> int:
-        pass
+    def scrape_post_id(self, url: str) -> str or None:
+        if not url: return None
+        if not isinstance(url, str):
+            print("not string")
+            return None
+        sep = '/discussion/'
+        _, _, id_string = url.partition(sep)
+        post_id = id_string[0:5]
+        return post_id
 
-    def scrape_post_content(self, soup: BeautifulSoup) -> list[str]:
-        pass
+    def scrape_post_content(self, soup: BeautifulSoup) -> list[str] or str or None:
+        content_p = []
 
-    def scrape_post_author(self, soup: BeautifulSoup) -> Author:
-        pass
+        div_discussion = soup.find('div', class_='Discussion')
+        if not div_discussion: return None
+        div_content = div_discussion.find('div', class_='Message userContent')
+        if not div_content: return None
 
-    def scrape_post_date(self, soup: BeautifulSoup) -> str:
-        pass
+        if div_content.find('p'):
+            for paragraph in div_content.find_all('p'):
+                content_p.append(paragraph.get_text(separator='\n'))
+        else:
+            content_p.append(div_content.get_text(separator='\n'))
 
-    def scrape_comment_content(self, soup: BeautifulSoup) -> list[str]:
-        pass
+        # split paragraph
+        content = []
+        for p in content_p:
+            pattern = r'[\n\.\?\!]+'
+            arr = re.split(pattern, p)
+            for s in arr:
+                if not s: continue
+                if s.isspace(): continue
+                s = s.strip()
+                clean_s = self.clean_text(s)
+                content.append(clean_s)
 
-    def scrape_comment_author(self, soup: BeautifulSoup) -> Author:
-        pass
+        return content
 
-    def scrape_comment_date(self, soup: BeautifulSoup) -> str:
-        pass
+    def scrape_post_author(self, soup: BeautifulSoup) -> Author or None:
+        author_div = soup.find('span', class_="Author")
+        if not author_div: return None
+        author_a = author_div.find('a')
+        if not author_a: return None
 
-    def scrape_comments(self, soup) -> list[Comment]:
-        pass
+        author_name = author_a.string
+        author_id = author_a.get('data-userid')
+        link = author_a.get('href')
+
+        # get author obj
+        author = Author(author_name, author_id, link)
+        return author
+
+    def scrape_post_date(self, soup: BeautifulSoup) -> str or None:
+        div_discussion = soup.find('div', class_='Discussion')
+        if not div_discussion: return None
+        div_meta_discussion = div_discussion.find('div', class_='Meta DiscussionMeta')
+        if not div_meta_discussion: return None
+        time_div = div_meta_discussion.find('time')
+        if not time_div: return None
+        date = time_div.get('title')
+        return date
+
+    def scrape_comment_content(self, comment_div) -> list[str] or str or None:
+        content_arr = []
+
+        div_content = comment_div.find('div', class_='Message userContent')
+        if not div_content: return None
+
+        paragraphs = div_content.find_all('p')
+        if len(paragraphs) == 0:
+            content_arr.append(div_content.get_text(separator='\n'))
+
+        for paragraph in paragraphs:
+            content_arr.append(paragraph.get_text(separator='\n'))
+
+        content = []
+        for p in content_arr:
+            pattern = r'[\n\.\?\!]+'
+            arr = re.split(pattern, p)
+            for s in arr:
+                if not s: continue
+                if s.isspace(): continue
+                s = s.strip()
+                clean_s = self.clean_text(s)
+                content.append(clean_s)
+
+        return content
+
+    def scrape_comment_author(self, comment_div) -> Author or None:
+        # get author data
+        div_meta_comment = comment_div.find('div', class_='Meta CommentMeta CommentInfo')
+        if not div_meta_comment: return None
+        time_div = div_meta_comment.find('time')
+        if not time_div: return None
+        date = time_div.get('title')
+        author_name = comment_div.find('a', class_='Username js-userCard').string
+        author_id = comment_div.find('a', class_='Username js-userCard').get('data-userid')
+        link = comment_div.find('a', class_='Username js-userCard').get('href')
+
+        # get author obj
+        author = Author(author_name, author_id, link)
+        return author
+
+    def scrape_comment_date(self, comment_div) -> str:
+        time_div = comment_div.find('time')
+        return time_div.get('title')
+
+    def scrape_comments(self, soup: BeautifulSoup, url: str) -> list[Comment]:
+        comments = []
+        for comment_div in soup.find_all('div', class_='Comment'):
+            # get comment
+            content = self.scrape_comment_content(comment_div)
+            author = self.scrape_comment_author(comment_div)
+            date = self.scrape_comment_date(comment_div)
+            post_id = self.scrape_post_id(url)
+            if content and author and date and post_id:
+                comment = Comment(url, post_id, date, author, content)
+                comments.append(comment)
+
+        return comments
