@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 import py.tests.TestCrawl as tc
 import py.tests.TestScrape as ts
-
+from py.model.ScrapingPipeline import ALZConnectedScrapingPipeline
 
 base = r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src\data'
 path = pathlib.Path(base)
@@ -31,16 +31,14 @@ def testing():
 
 
 def main():
-    ts.test_scrape(
-        url_base= early_onset['url_base'],
-        num_pages= early_onset['num_pages'],
+    pipeline = ALZConnectedScrapingPipeline()
+    pipeline.run_pipeline(
+        url_base=early_onset['url_base'],
         seed_path=early_onset['seed_path'],
+        seed_num=early_onset['num_pages'],
         crawl_path=early_onset['crawl_path'],
-        scrape_path=early_onset['scrape_path'],
-        seed_limit = 5,
-        crawl_limit= 10
+        scrape_path=early_onset['scrape_path']
     )
-
 
 
 if __name__ == '__main__':

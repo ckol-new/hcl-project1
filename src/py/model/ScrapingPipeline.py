@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 import re
 import json
 import requests
@@ -168,7 +169,7 @@ class ScrapingPipeline(ABC):
             for post in scrape_results:
                 # none check
                 if post:
-                    f.write(json.dumps(post.to_dict(), indent=2))
+                    f.write(json.dumps(post.to_dict()))
                     f.write('\n')
 
 
@@ -177,7 +178,7 @@ class ALZConnectedScrapingPipeline(ScrapingPipeline, ABC):
     def __init__(self):
         pass
 
-    def run_pipeline(self, url_base: str, seed_path: str, seed_num: int, crawl_path: str, scrape_path: str, seed_start: int = 2, seed_limit: int = None, crawl_limit: int = None):
+    def run_pipeline(self, url_base: str, seed_path: str or Path, seed_num: int, crawl_path: str or Path, scrape_path: str, seed_start: int = 2, seed_limit: int = None, crawl_limit: int = None):
         # generate seeds
         seeds = self.generate_seeds(url_base, seed_num, seed_start, seed_limit)
         self.save_seeds(seed_path, seeds)
