@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import py.tests.TestCrawl as tc
 import py.tests.TestScrape as ts
 from py.model.ScrapingPipeline import ALZConnectedScrapingPipeline
+from py.model.EmbeddingPipeline import EmbeddingPipeline
 
 base = r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src\data'
 path = pathlib.Path(base)
@@ -29,8 +30,8 @@ def testing():
         if p.string: print(p.string)
         else: print(p.get_text(separator='\n'))
 
-
 def main():
+    '''
     pipeline = ALZConnectedScrapingPipeline()
     pipeline.run_pipeline(
         url_base=early_onset['url_base'],
@@ -39,6 +40,9 @@ def main():
         crawl_path=early_onset['crawl_path'],
         scrape_path=early_onset['scrape_path']
     )
+    '''
+
+    # test embedding
 
 
 if __name__ == '__main__':
