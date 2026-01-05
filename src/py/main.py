@@ -15,11 +15,12 @@ early_onset = {
     'num_pages': 10,
     'seed_path': path / 'Seeds_Output' / 'ALZConnected' / 'test.txt',
     'crawl_path': path / 'Crawl_Output' / 'ALZConnected' / 'test.txt',
-    'scrape_path': path / 'Scrape_Output' / 'ALZConnected' / 'test.txt'
+    'scrape_path': path / 'Scrape_Output' / 'ALZConnected' / 'test.txt',
+    'embedding_path': path / 'Embed_Output' / 'ALZConnected' / 'test.jsonl'
 }
 
 def testing():
-    url = 'https://alzconnected.org/discussion/comment/260911#Comment_260911?utm_source=community-search&utm_medium=organic-search&utm_term=Working'
+    url = 'https://alzconnected.org/discussion/comment/260911#Comment_260911?utm_source=community-search&utm_medium=organic-search&utm_term=Working'
     html = requests.get(url)
     soup = BeautifulSoup(html.text, 'html.parser')
 
@@ -43,7 +44,8 @@ def main():
     '''
 
     # test embedding
-
+    pipeline = EmbeddingPipeline()
+    pipeline.run_pipeline(scrape_path=early_onset['scrape_path'], embedding_path=early_onset['embedding_path'], limit=1)
 
 if __name__ == '__main__':
     main()
