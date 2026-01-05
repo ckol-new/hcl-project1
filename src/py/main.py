@@ -3,7 +3,7 @@ import pathlib
 import requests
 from bs4 import BeautifulSoup
 
-import py.tests.TestEmbedding as te
+import py.tests.TestSerialization as ts
 from py.model.ScrapingPipeline import ALZConnectedScrapingPipeline
 from py.model.EmbeddingPipeline import EmbeddingPipeline
 
@@ -31,28 +31,7 @@ def testing():
         else: print(p.get_text(separator='\n'))
 
 def main():
-    '''
-    pipeline = ALZConnectedScrapingPipeline()
-    pipeline.run_pipeline(
-        url_base=early_onset['url_base'],
-        seed_path=early_onset['seed_path'],
-        seed_num=early_onset['num_pages'],
-        crawl_path=early_onset['crawl_path'],
-        scrape_path=early_onset['scrape_path']
-    )
-    '''
-    '''
-    pipeline = EmbeddingPipeline()
-    pipeline.run_pipeline(
-        scrape_path=early_onset['scrape_path'],
-        embedding_path=early_onset['embedding_path'],
-        limit=5
-    )
-    '''
-
-    te.test_loading_embed_sentence(early_onset['embedding_path'], count=1)
-
-
+    ts.test_scrape_serialization()
 
 if __name__ == '__main__':
     main()
