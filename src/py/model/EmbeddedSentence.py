@@ -59,14 +59,26 @@ class EmbeddedSentence:
             sentence_type=data['sentence_type']
         )
 
+    # need this method to check for equality of sparse torch embeddings
+    def __sparse_equal(self, a: torch.Tensor, b: torch.Tensor) -> bool:
+        if a.shape != b.shape:
+            return False
+
+        a = a.coalesce()
+        b = b.coalesce()
+
+        return (
+                torch.equal(a.indices(), b.indices()) and
+                torch.equal(a.values(), b.values())
+        )
+
     def __eq__(self, other):
         if not isinstance(other, EmbeddedSentence): return False
         return (
             self.sentence == other.sentence and
             np.array_equal(self.dense_embedding, other.dense_embedding) and
-            self.dense_embedding_shape == other.sparse_embedding_shape and
-            self.sparse_embedding_shape == other.sparse_embedding_shape and
-            torch.equal(self.sparse_embedding, other.sparse_embedding) and
+            self.dense_embedding_shape == other.dense_embedding_shape and
+            self.__sparse_equal(self.sparse_embedding, other.sparse_embedding) and
             self.url == other.url and
             self.title == other.title and
             self.post_location == other.post_location,

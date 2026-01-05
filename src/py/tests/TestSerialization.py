@@ -4,6 +4,8 @@ from py.model.Comment import Comment
 from py.model.Post import Post
 from py.model.Author import Author
 from py.model.EmbeddedSentence import EmbeddedSentence
+from py.model.EmbeddingPipeline import EmbeddingPipeline
+
 # testing serialization
 root = r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src'
 cwd = pathlib.Path(root)
@@ -54,6 +56,7 @@ def test_post_identity(A: Post, B: Post) -> bool:
     assert A == B, 'POSTS NOT EQUAL'
     return A == B
 
+# main function: run this to test
 def test_scrape_serialization() -> None:
     post = get_post_test()
     save_post(post)
@@ -62,6 +65,33 @@ def test_scrape_serialization() -> None:
     if test_post_identity(post, loaded):
         print('serialization success')
 
+def get_embedded_sentence(sentence: str, sentence_type: str, url: str, title:str) -> EmbeddedSentence:
+    pipeline = EmbeddingPipeline()
+    embed_sentence = pipeline.embed_sentence(sentence, sentence_type, url, title)
+    return embed_sentence
 
+def save_embedded_sentence(embedded_sentence: EmbeddedSentence) -> None:
+    with open(embed_path, 'w') as f:
+        f.write(json.dumps(embedded_sentence.to_dict()))
 
+def load_embedded_sentence() -> EmbeddedSentence:
+    with open(embed_path, 'r') as f:
+        line = f.readline()
+        e_sentence = EmbeddedSentence.from_dict(json.loads(line))
+        return e_sentence
 
+def test_identity_embedded_sentence(A: EmbeddedSentence, B: EmbeddedSentence) -> bool:
+    assert A == B, 'POSTS NOT EQUAL'
+    return A == B
+
+# main function: run this to test
+def test_embed_serialization() -> None:
+     post = get_embedded_sentence('test sentence', 'test-type', 'http:test', 'test title')
+     save_embedded_sentence(post)
+     loaded = load_embedded_sentence()
+
+     if test_identity_embedded_sentence(post, loaded): print("serialization success")
+
+# run
+test_scrape_serialization()
+test_embed_serialization()
