@@ -106,6 +106,7 @@ class ScrapingPipeline(ABC):
 
     # scrape a page for data
     def scrape_page(self, url: str) -> Post or None:
+        #TODO Remove newline character at the end of the url as it gets scraped.
         print(url)
         html = self.request_page(url)
         soup = BeautifulSoup(html, 'html.parser')

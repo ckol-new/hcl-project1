@@ -3,8 +3,7 @@ import pathlib
 import requests
 from bs4 import BeautifulSoup
 
-import py.tests.TestCrawl as tc
-import py.tests.TestScrape as ts
+import py.tests.TestEmbedding as te
 from py.model.ScrapingPipeline import ALZConnectedScrapingPipeline
 from py.model.EmbeddingPipeline import EmbeddingPipeline
 
@@ -42,10 +41,18 @@ def main():
         scrape_path=early_onset['scrape_path']
     )
     '''
-
-    # test embedding
+    '''
     pipeline = EmbeddingPipeline()
-    pipeline.run_pipeline(scrape_path=early_onset['scrape_path'], embedding_path=early_onset['embedding_path'], limit=1)
+    pipeline.run_pipeline(
+        scrape_path=early_onset['scrape_path'],
+        embedding_path=early_onset['embedding_path'],
+        limit=5
+    )
+    '''
+
+    te.test_loading_embed_sentence(early_onset['embedding_path'], count=1)
+
+
 
 if __name__ == '__main__':
     main()
