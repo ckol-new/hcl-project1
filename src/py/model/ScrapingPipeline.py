@@ -111,6 +111,7 @@ class ScrapingPipeline(ABC):
         html = self.request_page(url)
         soup = BeautifulSoup(html, 'html.parser')
         title = self.scrape_title(soup)
+        url = url.strip()
         print(title)
         post_id = self.scrape_post_id(url)
         print(post_id)
@@ -179,7 +180,7 @@ class ALZConnectedScrapingPipeline(ScrapingPipeline, ABC):
     def __init__(self):
         pass
 
-    def run_pipeline(self, url_base: str, seed_path: str or Path, seed_num: int, crawl_path: str or Path, scrape_path: str, seed_start: int = 2, seed_limit: int = None, crawl_limit: int = None):
+    def run_pipeline(self, url_base: str, seed_path: str or Path, seed_num: int, crawl_path: str or Path, scrape_path: str or Path, seed_start: int = 2, seed_limit: int = None, crawl_limit: int = None):
         # generate seeds
         seeds = self.generate_seeds(url_base, seed_num, seed_start, seed_limit)
         self.save_seeds(seed_path, seeds)
@@ -197,8 +198,11 @@ class ALZConnectedScrapingPipeline(ScrapingPipeline, ABC):
         num = 0
         seeds = [url_base]
         for page in range(start, num_pages + 1):
+
             if limit:
                 if num >= limit: break
+            num += 1
+
             seed = url_base + '/p' + str(page)
             seeds.append(seed)
 

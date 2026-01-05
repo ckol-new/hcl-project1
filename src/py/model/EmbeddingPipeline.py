@@ -14,6 +14,11 @@ class EmbeddingPipeline:
         self.dense_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
         self.sparse_model = SparseEncoder('naver/splade-cocondenser-ensembledistil')
 
+    def run_pipeline(self, scrape_path: str or Path, embedding_path: str or Path, limit: int = None):
+        embeddings = self.embed_scraped_data(scrape_path, limit)
+        print(len(embeddings))
+        EmbeddingPipeline.save_embedded_data(embeddings, embedding_path)
+
     def load_post(self, data: str) -> Post:
         post = Post.from_dict(json.loads(data))
         return post
@@ -99,6 +104,7 @@ class EmbeddingPipeline:
 
         return embeddings
 
+    # save list of embeddings to json file
     @classmethod
     def save_embedded_data(cls, embeddings: list[EmbeddedSentence], embed_path: str or Path):
         print('j')
@@ -108,7 +114,15 @@ class EmbeddingPipeline:
                 f.write(json.dumps(embedding.to_dict()))
                 f.write('\n')
 
-    def run_pipeline(self, scrape_path: str or Path, embedding_path: str or Path, limit: int = None):
-        embeddings = self.embed_scraped_data(scrape_path, limit)
-        print(len(embeddings))
-        EmbeddingPipeline.save_embedded_data(embeddings, embedding_path)
+
+    # load embeddings from jsonl file
+    @classmethod
+    def load_embeddings(cls, file: str or Path) -> list[EmbeddedSentence]:
+        embeddings = []
+
+        with open(file, 'r') as f:
+            for line in f:
+                embedded_sentence: EmbeddedSentence = EmbeddedSentence.from_dict(json.loads(line))
+                embeddings.append(embedded_sentence)
+
+        return embeddings

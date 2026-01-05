@@ -9,7 +9,7 @@ from py.model.EmbeddingPipeline import EmbeddingPipeline
 
 base = r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src\data'
 path = pathlib.Path(base)
-early_onset = {
+early_onset_test = {
     'url_base': 'https://alzconnected.org/categories/i-have-younger-onset-alzheimers',
     'num_pages': 10,
     'seed_path': path / 'Seeds_Output' / 'ALZConnected' / 'test.txt',
@@ -31,7 +31,22 @@ def testing():
         else: print(p.get_text(separator='\n'))
 
 def main():
-    ts.test_scrape_serialization()
+    spipe = ALZConnectedScrapingPipeline()
+    epipe = EmbeddingPipeline()
+    spipe.run_pipeline(
+        url_base=early_onset_test['url_base'],
+        seed_path=early_onset_test['seed_path'],
+        seed_num=early_onset_test['num_pages'],
+        crawl_path=early_onset_test['crawl_path'],
+        scrape_path=early_onset_test['scrape_path'],
+        seed_limit=1,
+        crawl_limit= 5,
+    )
+
+    epipe.run_pipeline(
+        scrape_path=early_onset_test['scrape_path'],
+        embedding_path=early_onset_test['embedding_path'],
+    )
 
 if __name__ == '__main__':
     main()
