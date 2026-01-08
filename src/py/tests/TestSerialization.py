@@ -91,7 +91,3 @@ def test_embed_serialization() -> None:
      loaded = load_embedded_sentence()
 
      if test_identity_embedded_sentence(post, loaded): print("serialization success")
-
-# run
-test_scrape_serialization()
-test_embed_serialization()

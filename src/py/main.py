@@ -2,10 +2,12 @@ import pathlib
 
 import requests
 from bs4 import BeautifulSoup
+import pprint
 
 import py.tests.TestSerialization as ts
 from py.model.ScrapingPipeline import ALZConnectedScrapingPipeline
 from py.model.EmbeddingPipeline import EmbeddingPipeline
+from py.model.QueryPipeline import QueryPipeline
 
 base = r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src\data'
 path = pathlib.Path(base)
@@ -15,7 +17,8 @@ early_onset_test = {
     'seed_path': path / 'Seeds_Output' / 'ALZConnected' / 'test.txt',
     'crawl_path': path / 'Crawl_Output' / 'ALZConnected' / 'test.txt',
     'scrape_path': path / 'Scrape_Output' / 'ALZConnected' / 'test.txt',
-    'embedding_path': path / 'Embed_Output' / 'ALZConnected' / 'test.jsonl'
+    'embedding_path': path / 'Embed_Output' / 'ALZConnected' / 'test.jsonl',
+    'results_path': path / 'Results' / 'test.jsonl'
 }
 
 def testing():
@@ -31,22 +34,13 @@ def testing():
         else: print(p.get_text(separator='\n'))
 
 def main():
-    spipe = ALZConnectedScrapingPipeline()
-    epipe = EmbeddingPipeline()
-    spipe.run_pipeline(
-        url_base=early_onset_test['url_base'],
-        seed_path=early_onset_test['seed_path'],
-        seed_num=early_onset_test['num_pages'],
-        crawl_path=early_onset_test['crawl_path'],
-        scrape_path=early_onset_test['scrape_path'],
-        seed_limit=1,
-        crawl_limit= 5,
-    )
+    print('starting')
+    q_pipeline = QueryPipeline()
+    query = 'Dealing with anger, and outbursts'
 
-    epipe.run_pipeline(
-        scrape_path=early_onset_test['scrape_path'],
-        embedding_path=early_onset_test['embedding_path'],
-    )
+    print('making query')
+    results = q_pipeline.query(query, early_onset_test['embedding_path'], top_n=100, top_k=20)
+    q_pipeline.display_result(results)
 
 if __name__ == '__main__':
     main()
