@@ -36,10 +36,10 @@ def testing():
 def main():
     print('starting')
     q_pipeline = QueryPipeline()
-    query = 'Dealing with anger, and outbursts'
+    query = 'Death, existentialism, fear'
 
     print('making query')
-    results = q_pipeline.query(query, early_onset_test['embedding_path'], top_n=100, top_k=20)
+    results = q_pipeline.query(query, early_onset_test['embedding_path'], top_n=100, top_k=10)
     q_pipeline.display_result(results)
 
 if __name__ == '__main__':
