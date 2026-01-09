@@ -151,11 +151,14 @@ class QueryPipeline:
         return result.item()
 
     # display results
-    def display_result(self, results: list):
+    def display_result(self, results: list) -> list[str]:
+        output = []
+
         for result in results:
             embedded_sentence: EmbeddedSentence = result[0]
             similarity = result[1]
 
+            '''
             print(embedded_sentence.title)
             print(embedded_sentence.url)
             print(embedded_sentence.sentence_type)
@@ -164,3 +167,17 @@ class QueryPipeline:
             print(embedded_sentence.sentence)
             print(f'\t similarity is {float(similarity)}')
             print()
+            '''
+            similarity_score = float(result[1])
+            output.append(f'the similarity is: {similarity_score}')
+            output.append(f'\t title: {embedded_sentence.title}')
+            output.append(f'\t url: {embedded_sentence.url}')
+            output.append(f'\t type: {embedded_sentence.sentence_type}')
+            output.append(f'\t data base: {embedded_sentence.data_origin}')
+            output.append(f'\t line number: {embedded_sentence.line_number}')
+            output.append(f'*** \t sentence: {embedded_sentence.sentence} ***')
+            output.append('')
+
+        return output
+
+
