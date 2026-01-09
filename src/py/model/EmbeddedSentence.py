@@ -59,7 +59,7 @@ class EmbeddedSentence:
             sparse_embedding=sparse_embedding,
             url =data['url'],
             title=data['title'],
-            data_origin=data['data_origin'],
+            data_origin=data['data-origin'],
             line_number=data['line_number'],
             sentence_index=data['sentence_index'],
             sentence_type=data['sentence_type']

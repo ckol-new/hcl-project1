@@ -241,7 +241,9 @@ class ALZConnectedScrapingPipeline(ScrapingPipeline, ABC):
     def scrape_title(self, soup) -> str or None:
         title_text = soup.title.string
         title_text = title_text.removesuffix(' \u2014 ALZConnected')
-        return title_text
+        # clean title text
+        clean_title_text = self.clean_text(title_text)
+        return clean_title_text
 
     def scrape_post_id(self, url: str) -> str or None:
         if not url: return None
