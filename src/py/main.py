@@ -128,7 +128,8 @@ def query_multi():
     q_pipeline = QueryPipeline()
     query_text = 'Abusive hospital staff, physically abusing patients, abusive family members'
     datasets = (early_onset['embedding_path'], dementia_or_other['embedding_path'])
-    results = q_pipeline.multi_query(
+    dataset = (early_onset['embedding_path'])
+    results = q_pipeline.query(
         query_text,
         *datasets,
         top_n=50,
@@ -137,8 +138,7 @@ def query_multi():
     q_pipeline.display_result(results)
 
 def main():
-    query_multi()
-
+    pass
 
 if __name__ == '__main__':
     main()
