@@ -56,14 +56,12 @@ class EmbeddingPipeline:
         self.index += 1
 
         for sentence in post.content:
-            print(sentence)
             embed_content_sentence = self.embed_sentence(sentence, types[2], url=post.url, title=post.title)
             embeddings.append(embed_content_sentence)
             self.index += 1
 
         for comment in post.comments:
             for sentence in comment.content:
-                print(sentence)
                 embed_comment_sentence = self.embed_sentence(sentence, types[3], url=post.url, title=post.title)
                 embeddings.append(embed_comment_sentence)
                 self.index += 1
@@ -84,7 +82,6 @@ class EmbeddingPipeline:
             num = 0
             # for line in file
             for line in f:
-                print(num)
                 if limit:
                     if num >= limit: break
                 if num % 10 == 0:
@@ -97,7 +94,6 @@ class EmbeddingPipeline:
                 # get embedded sentences
                 post_embeddings = self.embed_post(post)
                 if post_embeddings:
-                    print('x')
                     embeddings = embeddings + post_embeddings
 
                 self.cur_post_location += 1
@@ -107,10 +103,8 @@ class EmbeddingPipeline:
     # save list of embeddings to json file
     @classmethod
     def save_embedded_data(cls, embeddings: list[EmbeddedSentence], embed_path: str or Path):
-        print('j')
         with open(embed_path, 'w') as f:
             for embedding in embeddings:
-                print(f'saving')
                 f.write(json.dumps(embedding.to_dict()))
                 f.write('\n')
 

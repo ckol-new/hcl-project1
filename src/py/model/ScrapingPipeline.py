@@ -113,13 +113,9 @@ class ScrapingPipeline(ABC):
         url = url.strip()
         print(title)
         post_id = self.scrape_post_id(url)
-        print(post_id)
         date = self.scrape_post_date(soup)
-        print(date)
         content = self.scrape_post_content(soup)
-        print(content)
         author = self.scrape_post_author(soup)
-        print(author)
 
         # scrape comments
         comments = self.scrape_comments(soup=soup, url=url)
@@ -130,7 +126,6 @@ class ScrapingPipeline(ABC):
         if not date: return None
         if not content or len(content) == 0: return None
         if not comments or len(comments) == 0: return None
-        print(title)
 
         post = Post(
             url=url,
@@ -141,7 +136,6 @@ class ScrapingPipeline(ABC):
             date=date,
             comments=comments
         )
-        print(post)
 
         return post
 
@@ -153,7 +147,6 @@ class ScrapingPipeline(ABC):
         with open(crawl_path, 'r') as f:
             n = 0
             for link in f:
-                print(n)
                 if n % 10 == 0:
                     print(f'%{(n / length) * 100}')
                 n += 1
