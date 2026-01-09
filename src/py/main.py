@@ -91,24 +91,11 @@ def scrape_queue():
     s_pipeline = ALZConnectedScrapingPipeline()
     e_pipeline = EmbeddingPipeline()
 
-    '''
+    print(type(early_onset['scrape_path']))
     e_pipeline.run_pipeline(
-        scrape_path=caregiver_general_p1_100['scrape_path'],
-        embedding_path=caregiver_general_p1_100['embedding_path']
-    )
-    '''
-
-    s_pipeline.run_pipeline(
-        url_base=dementia_or_other['url_base'],
-        seed_path=dementia_or_other['seed_path'],
-        seed_num=dementia_or_other['num_pages'],
-        crawl_path=dementia_or_other['crawl_path'],
-        scrape_path=dementia_or_other['scrape_path']
-    )
-
-    e_pipeline.run_pipeline(
-        scrape_path=dementia_or_other['scrape_path'],
-        embedding_path=dementia_or_other['embedding_path']
+        scrape_path=early_onset['scrape_path'],
+        embedding_path=early_onset['embedding_path'],
+        limit=5
     )
 
 
@@ -138,7 +125,7 @@ def query_multi():
     q_pipeline.display_result(results)
 
 def main():
-    pass
+    scrape_queue()
 
 if __name__ == '__main__':
     main()

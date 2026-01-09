@@ -4,16 +4,18 @@ import torch
 # embedded sentence object contains a sentence, it's dense and sparse embeddings, as well as meta data and tracking info.
 # my embedded data set will contain a bunch of embedded objects.
 
-# tracking info_metadata: url to post, title of post, line number of post object in json
+# tracking info_metadata: url to post, title of post, line number of post object in json, and index position of sentence in post or comment content
 class EmbeddedSentence:
-    def __init__(self, sentence: str, dense_embedding: np.ndarray, sparse_embedding, url: str, title: str, post_location: int, sentence_type: str):
+    def __init__(self, sentence: str, dense_embedding: np.ndarray, sparse_embedding, url: str, title: str, data_origin: str, line_number: int, sentence_index: int, sentence_type: str):
         self.sentence = sentence
         self.dense_embedding = dense_embedding
         self.dense_embedding_shape = dense_embedding.shape
         self.sparse_embedding = sparse_embedding.coalesce() # torch tensor
         self.url = url
         self.title = title
-        self.post_location = post_location
+        self.data_origin = data_origin
+        self.line_number = line_number
+        self.sentence_index = sentence_index
         self.sentence_type = sentence_type
 
     def to_dict(self):
@@ -34,7 +36,9 @@ class EmbeddedSentence:
             },
             'url': self.url,
             'title': self.title,
-            'post_location': self.post_location,
+            'line_number': self.line_number,
+            'data-origin': self.data_origin,
+            'sentence_index': self.sentence_index,
             'sentence_type': self.sentence_type
         }
 
@@ -55,7 +59,9 @@ class EmbeddedSentence:
             sparse_embedding=sparse_embedding,
             url =data['url'],
             title=data['title'],
-            post_location=data['post_location'],
+            data_origin=data['data_origin'],
+            line_number=data['line_number'],
+            sentence_index=data['sentence_index'],
             sentence_type=data['sentence_type']
         )
 
@@ -75,11 +81,13 @@ class EmbeddedSentence:
     def __eq__(self, other):
         if not isinstance(other, EmbeddedSentence): return False
         return (
-            self.sentence == other.sentence and
-            np.array_equal(self.dense_embedding, other.dense_embedding) and
-            self.dense_embedding_shape == other.dense_embedding_shape and
-            self.__sparse_equal(self.sparse_embedding, other.sparse_embedding) and
-            self.url == other.url and
-            self.title == other.title and
-            self.post_location == other.post_location,
+                self.sentence == other.sentence and
+                np.array_equal(self.dense_embedding, other.dense_embedding) and
+                self.dense_embedding_shape == other.dense_embedding_shape and
+                self.__sparse_equal(self.sparse_embedding, other.sparse_embedding) and
+                self.url == other.url and
+                self.title == other.title and
+                self.data_origin == other.data_origin and
+                self.line_number == other.line_number and
+                self.sentence_index == other.sentence_index
         )

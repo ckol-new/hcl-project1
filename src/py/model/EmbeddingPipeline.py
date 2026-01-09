@@ -4,13 +4,13 @@ import json
 from sentence_transformers import SentenceTransformer, SparseEncoder
 from py.model.Post import Post
 from py.model.EmbeddedSentence import EmbeddedSentence
-from pathlib import Path
+from pathlib import Path, WindowsPath
 
 # embedding pipeline handles the embedding of scraped data
 class EmbeddingPipeline:
     def __init__(self):
         self.index = 0 # index field is the index of the current sentences being embedded, is tracked as a part of tracking info
-        self.cur_post_location = 0 # field of the line number currently being embedded
+        self.cur_post_location = 1 # field of the line number currently being embedded
         self.dense_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
         self.sparse_model = SparseEncoder('naver/splade-cocondenser-ensembledistil')
 
@@ -23,8 +23,8 @@ class EmbeddingPipeline:
         post = Post.from_dict(json.loads(data))
         return post
 
-    def embed_sentence(self, sentence: str, sentence_type: str, url: str, title: str) -> EmbeddedSentence:
-        dense_embedded_sentence = self.dense_model.encode(sentence)
+    def embed_sentence(self, sentence: str, sentence_type: str, url: str, title: str, data_origin: str) -> EmbeddedSentence:
+        dense_embedded_sentence = self.dense_model.encode(sentence, convert_to_numpy=True)
         sparse_embedded_sentence = self.sparse_model.encode(sentence)
 
         embedded_sentence = EmbeddedSentence(
@@ -33,7 +33,9 @@ class EmbeddingPipeline:
             sparse_embedded_sentence,
             url=url,
             title=title,
-            post_location=self.cur_post_location,
+            data_origin=data_origin,
+            line_number=self.cur_post_location,
+            sentence_index=self.index,
             sentence_type=sentence_type
         )
 
@@ -41,7 +43,10 @@ class EmbeddingPipeline:
 
     # embed each sentence in the post
     # return a list of embedded sentences
-    def embed_post(self, post: Post) -> (list[EmbeddedSentence]):
+    def embed_post(self, post: Post, origin: str) -> (list[EmbeddedSentence]):
+        # reset sentence index
+        self.index = 0
+
         start = perf_counter()
         print(post.title)
         types = {
@@ -51,18 +56,18 @@ class EmbeddingPipeline:
         }
         embeddings = []
 
-        embed_title = self.embed_sentence(post.title, types[1], url=post.url, title=post.title)
+        embed_title = self.embed_sentence(post.title, types[1], url=post.url, title=post.title, data_origin=origin)
         embeddings.append(embed_title)
         self.index += 1
 
         for sentence in post.content:
-            embed_content_sentence = self.embed_sentence(sentence, types[2], url=post.url, title=post.title)
+            embed_content_sentence = self.embed_sentence(sentence, types[2], url=post.url, title=post.title, data_origin=origin)
             embeddings.append(embed_content_sentence)
             self.index += 1
 
         for comment in post.comments:
             for sentence in comment.content:
-                embed_comment_sentence = self.embed_sentence(sentence, types[3], url=post.url, title=post.title)
+                embed_comment_sentence = self.embed_sentence(sentence, types[3], url=post.url, title=post.title, data_origin=origin)
                 embeddings.append(embed_comment_sentence)
                 self.index += 1
 
@@ -92,10 +97,19 @@ class EmbeddingPipeline:
                 post = self.load_post(line)
 
                 # get embedded sentences
-                post_embeddings = self.embed_post(post)
+                data_origin = None
+                if type(scrape_path) == Path or type(scrape_path) == WindowsPath:
+                    data_origin = scrape_path.name
+                    print(data_origin)
+                elif type(scrape_path) == str:
+                    data_origin = Path(scrape).name
+                    print(data_origin)
+
+                post_embeddings = self.embed_post(post, data_origin)
                 if post_embeddings:
                     embeddings = embeddings + post_embeddings
 
+                print(self.cur_post_location)
                 self.cur_post_location += 1
 
         return embeddings
