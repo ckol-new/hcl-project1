@@ -39,6 +39,36 @@ class QueryPipeline:
 
         return reranked_results
 
+    def multi_query(self, query: str, *embedded_paths: str or Path, top_n: int = 50, top_k = 5):
+        # load database
+        print('loading database')
+        db = []
+        for embedded_path  in embedded_paths:
+            sub_db = self.load_embedded_db(embedded_path)
+            db = db + sub_db
+
+        # embed query
+        print('embedding query')
+        dense_query = self.__dense_model.encode(query, convert_to_numpy=True)
+        sparse_query = self.__sparse_model.encode(query)
+
+        # sparse retrieval
+        print('sparse retrieval')
+        sparse_retrieval_results = self.sparse_retrieval(sparse_query, db, top_n)
+
+        # dense retrieval
+        print('sparse retrieval')
+        dense_retrieval_results = self.dense_retrievel(dense_query, db, top_n)
+
+        # pool sparse and dense results
+        print('pooling results')
+        pooled_results = self.pool_results(dense_retrieval_results, sparse_retrieval_results)
+
+        # cross encoder rerank
+        print('reranking results')
+        reranked_results = self.rerank(pooled_results, query, top_k)
+
+        return reranked_results
 
     def sparse_retrieval(self, query_vector: torch.tensor, embedded_db: list[EmbeddedSentence], top_n: int = 50) -> list[(EmbeddedSentence, float)]:
         dot_similarities = []
