@@ -125,7 +125,7 @@ def query_single():
 
 def query_multi():
     q_pipeline = QueryPipeline()
-    query_text = 'Abusive hospital staff, physically abusing patients, abusive family members'
+    query_text = 'Death in the family'
     datasets = (early_onset['embedding_path'], dementia_or_other['embedding_path'])
     results = q_pipeline.multi_query(
         query_text,
@@ -133,11 +133,14 @@ def query_multi():
         top_n=50,
         top_k=10
     )
-    q_pipeline.display_result(results)
+    results_data =  q_pipeline.get_result_data(results)
+    for data in results_data:
+        print(data.title, data.similarity)
 
 def main():
-    scrape_queue()
-    
+    query_multi()
+
+
 if __name__ == '__main__':
     main()
     quit()

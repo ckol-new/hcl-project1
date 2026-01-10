@@ -1,9 +1,12 @@
 from sentence_transformers import SparseEncoder, SentenceTransformer, CrossEncoder
 from py.model.EmbeddedSentence import EmbeddedSentence
+from py.model.ResultData import ResultData
+from py.model.Post import Post
 from pathlib import Path
 import torch
 import numpy as np
 import json
+
 
 class QueryPipeline:
     def __init__(self):
@@ -149,6 +152,66 @@ class QueryPipeline:
         # calculate dot product
         result = torch.sparse.mm(A, B)
         return result.item()
+
+    # get post object:
+    @staticmethod
+    def get_post(scrape_path: str or Path, line: int):
+        with open(scrape_path, 'r', encoding='utf-8') as f:
+            for i in range(line):
+                line = f.readline()
+
+        post = Post.from_dict(json.loads(line))
+        return post
+
+    # generate result data objects
+    @staticmethod
+    def get_result_data(results: list[(EmbeddedSentence, float)]) -> list[ResultData]:
+        base = r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src\data'
+        path = Path(base)
+        path = path / 'Scrape_Output' / 'ALZConnected'
+
+        data = []
+
+        for result in results:
+            embedded_sentence: EmbeddedSentence = result[0]
+            line_num = embedded_sentence.line_number
+            data_origin = embedded_sentence.data_origin
+            scrape_path = path / str(data_origin)
+
+            # get post
+            post = QueryPipeline.get_post(scrape_path, line_num)
+
+
+            # get result data
+            if embedded_sentence.sentence_type == 'post-content' or embedded_sentence.sentence_type == 'post-title':
+                result_data = ResultData(
+                    title=post.title,
+                    url=post.url,
+                    post_id=post.post_id,
+                    similarity=result[1],
+                    sentence=embedded_sentence.sentence,
+                    context=post.content,
+                    data_origin=data_origin,
+                    line_number=line_num,
+                    post=post
+                )
+            elif embedded_sentence.sentence_type == 'comment-content':
+                #TODO for now we are just giving the post context as comment context, I later need a way to implement comment context
+                result_data = ResultData(
+                    title=post.title,
+                    url=post.url,
+                    post_id=post.post_id,
+                    similarity=result[1],
+                    sentence=embedded_sentence.sentence,
+                    context=post.content,
+                    data_origin=data_origin,
+                    line_number=line_num,
+                    post=post
+                )
+
+            data.append(result_data)
+
+        return data
 
     # display results
     def display_result(self, results: list) -> list[str]:
