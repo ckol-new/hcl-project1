@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from py.model.QueryPipeline import QueryPipeline
-
+from tkinter.font import Font
 
 
 class GUI:
@@ -12,11 +12,15 @@ class GUI:
         self.query_pipeline = QueryPipeline()
 
         #TODO replace this with gui selection of database
-        self.db = r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src\data\Embed_Output\ALZConnected\dementia_or_other_embedding.jsonl'
+        self.db = (
+            r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src\data\Embed_Output\ALZConnected\dementia_or_other_embedding.jsonl',
+            r'C:\Users\wslam\Everything\health_city_lab\project1\hcl-project\src\data\Embed_Output\ALZConnected\early_onset_embedding.jsonl'
+                   )
 
 
         # initialize window
         self.__root = tk.Tk()
+        self.style = Font(size=12, family='Times New Roman')
 
         # set title
         self.__root.title('Dementia Bot')
@@ -88,7 +92,7 @@ class GUI:
         scrollbar.grid(row=0, column=0)
 
         # set text view
-        textview = tk.Text(frame, wrap=tk.WORD, yscrollcommand=scrollbar.set)
+        textview = tk.Text(frame, wrap=tk.WORD, yscrollcommand=scrollbar.set, font=self.style)
         textview.grid(row=0, column=1, sticky='nsew')
         scrollbar.config(command=textview.yview)
 
@@ -119,6 +123,7 @@ class GUI:
             frame,
             text=text,
             padx=GUI.MEDIUM_PADDING, pady=GUI.MEDIUM_PADDING,
+            font=self.style
         ).grid(
             row=pos[0], column=pos[1],
             rowspan=span[0], columnspan=span[1],
@@ -130,7 +135,8 @@ class GUI:
             frame,
             text=text,
             command=action,
-            padx=GUI.MEDIUM_PADDING, pady=GUI.MEDIUM_PADDING
+            padx=GUI.MEDIUM_PADDING, pady=GUI.MEDIUM_PADDING,
+            font=self.style
         ).grid(
             row=pos[0], column=pos[1],
             rowspan=span[0], columnspan=span[1],
@@ -141,6 +147,7 @@ class GUI:
         # get query text
         if not self.query_entry.get(): return
         query_text = self.query_entry.get()
+        print(query_text)
 
         # get parameters
         if not self.top_K_entry.get(): return
@@ -153,15 +160,21 @@ class GUI:
             return
 
         # do query
-        results = self.query_pipeline.query(
-            query=query_text,
-            embedded_path=self.db,
+        results = self.query_pipeline.multi_query(
+            query_text,
+            *self.db,
             top_n=top_N,
             top_k=top_K
         )
 
+        self.result_view.insert(tk.END, '*****************************************************\n')
+        self.result_view.insert(tk.END, query_text + '\n')
+        self.result_view.insert(tk.END, '*****************************************************\n')
+
         outputs = self.query_pipeline.display_result(results)
         self.show_results(outputs)
+
+
 
     def show_results(self, outputs: list[str]):
         for line in outputs:

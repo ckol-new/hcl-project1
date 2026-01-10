@@ -84,6 +84,7 @@ class EmbeddingPipeline:
             length = sum(1 for _ in f)
 
         with open(scrape_path, 'r') as f:
+            self.cur_post_location = 1
             num = 0
             # for line in file
             for line in f:

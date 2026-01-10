@@ -97,6 +97,7 @@ def scrape_queue():
         embedding_path=early_onset['embedding_path'],
     )
 
+    '''
     s_pipeline.run_pipeline(
         url_base=dementia_or_other['url_base'],
         seed_path=dementia_or_other['seed_path'],
@@ -104,7 +105,7 @@ def scrape_queue():
         crawl_path=dementia_or_other['crawl_path'],
         scrape_path=dementia_or_other['scrape_path']
     )
-
+    '''
     e_pipeline.run_pipeline(
         scrape_path=dementia_or_other['scrape_path'],
         embedding_path=dementia_or_other['embedding_path'],
@@ -135,8 +136,8 @@ def query_multi():
     q_pipeline.display_result(results)
 
 def main():
-    query_multi()
-
+    scrape_queue()
+    
 if __name__ == '__main__':
     main()
     quit()
